@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快速回填測試 / Quick Feedback Test</title>
+<style>
+body{font-family:sans-serif;margin:40px;background:#f8f8f8;color:#333;}
+h2{color:#007b7f;}
+label{display:block;margin-top:10px;}
+input,textarea,select,button{width:100%;padding:8px;margin-top:4px;border:1px solid #ccc;border-radius:6px;}
+button{background:#007b7f;color:white;border:none;cursor:pointer;}
+button:hover{background:#009e9e;}
+#toast{position:fixed;top:20px;right:20px;background:rgba(0,0,0,.85);color:#5eead4;
+padding:10px 16px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;pointer-events:none;
+transform:translateY(-6px);transition:opacity .25s ease,transform .25s ease;}
+#toast.show{opacity:1;transform:translateY(0);}
+#result{margin-top:20px;font-family:monospace;white-space:pre-wrap;}
+.container{max-width:500px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>快速回填測試 / Quick Feedback Test</h2>
+
+  <label>姓名 / NAME</label>
+  <input id="name" placeholder="輸入姓名 / Type your name">
+
+  <label>IG</label>
+  <input id="ig" placeholder="輸入 IG 帳號 / Type your IG">
+
+  <label>桌長 / Leader</label>
+  <input id="leader" placeholder="輸入桌長姓名 / Type leader name">
+
+  <label>狀態 / Status</label>
+  <select id="status">
+    <option value="確認訂位，我會參加 | Confirm reservation - I will attend">確認訂位，我會參加 / Confirm reservation - I will attend</option>
+    <option value="抱歉，無法參加 | Sorry - cannot attend">抱歉，無法參加 / Sorry - cannot attend</option>
+  </select>
+
+  <label>備註 / Notes</label>
+  <textarea id="notes" rows="3" placeholder="可輸入其他訊息 / Optional notes"></textarea>
+
+  <button id="submitBtn">送出 / Submit</button>
+
+  <div id="result"></div>
+</div>
+
+<div id="toast">✔ 已成功送出 / Submitted</div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYaLN-YIX8-leyki5JdfvArDWFvyreBmGFBM5E3_EajWatzFBKA4blBLyBaQ0rHT2b/exec";
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg || '✔ 已成功送出 / Submitted';
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2000);
+}
+
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const payload = {
+    name: document.getElementById('name').value.trim(),
+    ig: document.getElementById('ig').value.trim(),
+    leader: document.getElementById('leader').value.trim(),
+    status: document.getElementById('status').value,
+    notes: document.getElementById('notes').value.trim()
+  };
+  const resultDiv = document.getElementById('result');
+  resultDiv.textContent = '⏳ 送出中 / Sending...\n' + JSON.stringify(payload, null, 2);
+  console.log("Sending payload:", payload);
+
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    console.log("Response text:", text);
+    try {
+      const json = JSON.parse(text);
+      resultDiv.textContent = "✅ 已送出成功 / Submitted\n\n伺服器回傳：\n" + JSON.stringify(json, null, 2);
+      showToast("✔ 已成功送出 / Submitted");
+    } catch(e) {
+      resultDiv.textContent = "⚠️ 回傳非 JSON 格式，內容如下：\n" + text;
+    }
+  } catch(err) {
+    resultDiv.textContent = "❌ 錯誤：無法連線到 Google Apps Script。\n" + err;
+  }
+});
+</script>
+</body>
+</html>
