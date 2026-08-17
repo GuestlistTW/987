@@ -1,94 +1,671 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>快速回填測試 / Quick Feedback Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>備貨管理系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:sans-serif;margin:40px;background:#f8f8f8;color:#333;}
-h2{color:#007b7f;}
-label{display:block;margin-top:10px;}
-input,textarea,select,button{width:100%;padding:8px;margin-top:4px;border:1px solid #ccc;border-radius:6px;}
-button{background:#007b7f;color:white;border:none;cursor:pointer;}
-button:hover{background:#009e9e;}
-#toast{position:fixed;top:20px;right:20px;background:rgba(0,0,0,.85);color:#5eead4;
-padding:10px 16px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;pointer-events:none;
-transform:translateY(-6px);transition:opacity .25s ease,transform .25s ease;}
-#toast.show{opacity:1;transform:translateY(0);}
-#result{margin-top:20px;font-family:monospace;white-space:pre-wrap;}
-.container{max-width:500px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+  :root {
+    --bg: #EDEFF3;
+    --panel: #FFFFFF;
+    --panel-2: #F7F9FB;
+    --ink: #0C1220;
+    --gray: #656F82;
+    --gray-2: #98A1B2;
+    --gray-3: #C3C9D4;
+    --line: #E5E9EF;
+    --line-2: #D3D9E2;
+    --navy: #14335E;
+    --navy-2: #23528C;
+    --navy-3: #3C7ACC;
+    --tint: #EDF4FC;
+    --amber: #9A6608;
+    --amber-bg: #FDF4E3;
+    --amber-line: #E9D4A4;
+    --green: #14713F;
+    --green-bg: #E9F5EE;
+    --red: #A82F28;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; border-radius: 0 !important; }
+
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Noto Sans TC', -apple-system, sans-serif;
+    min-height: 100vh; -webkit-font-smoothing: antialiased; font-feature-settings: 'palt';
+  }
+  .serif { font-family: 'Noto Serif TC', serif; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 110px; }
+  ::selection { background: var(--navy); color: #fff; }
+
+  /* ═══ LOGIN ═══ */
+  .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 26px; max-width: 480px; margin: 0 auto; background: linear-gradient(160deg, #14335E 0%, #0C1220 100%); }
+  .login-panel { width: 100%; background: var(--panel); padding: 42px 32px 32px; box-shadow: 0 40px 90px rgba(0,0,0,0.45); animation: panelUp 0.9s var(--ease) both; }
+  @keyframes panelUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .login-mark { width: 44px; height: 44px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-family: 'Noto Serif TC', serif; font-size: 18px; font-weight: 600; }
+  .login-title { font-family: 'Noto Serif TC', serif; font-size: 21px; font-weight: 600; letter-spacing: 0.08em; }
+  .login-sub { font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 0.28em; color: var(--gray-2); margin-top: 9px; }
+  .login-divider { height: 1px; background: var(--line); margin: 28px 0 26px; }
+  .in-group { margin-bottom: 18px; }
+  .in-label { display: block; font-size: 11.5px; font-weight: 500; color: var(--gray); letter-spacing: 0.08em; margin-bottom: 8px; }
+  .in-box { width: 100%; padding: 15px; background: var(--panel-2); border: 1px solid var(--line-2); font-size: 15px; color: var(--ink); outline: none; font-family: inherit; transition: all 0.25s var(--ease); }
+  .in-box:focus { border-color: var(--navy); background: #fff; box-shadow: inset 0 0 0 1px var(--navy); }
+  .remember-row { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0; }
+  .remember-row input { width: 15px; height: 15px; accent-color: var(--navy); margin-top: 2px; }
+  .remember-row label { font-size: 11.5px; color: var(--gray); line-height: 1.75; font-weight: 300; }
+  .btn-enter { width: 100%; padding: 17px; background: var(--navy); border: none; color: #fff; font-size: 13.5px; font-weight: 500; cursor: pointer; font-family: inherit; letter-spacing: 0.2em; text-indent: 0.2em; transition: all 0.3s var(--ease); }
+  .btn-enter:hover { background: var(--ink); }
+  .login-foot { text-align: center; font-size: 10.5px; color: var(--gray-2); margin-top: 22px; line-height: 2; font-weight: 300; }
+
+  /* ═══ TOP ═══ */
+  .top-bar { background: var(--navy); padding: 16px 20px 18px; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; }
+  .top-id { display: flex; align-items: center; gap: 12px; }
+  .top-avatar { width: 38px; height: 38px; background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif TC', serif; font-size: 15px; font-weight: 600; }
+  .top-name { font-size: 15.5px; font-weight: 500; color: #fff; letter-spacing: 0.06em; }
+  .top-date { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 0.14em; margin-top: 4px; }
+  .top-out { font-size: 11.5px; color: rgba(255,255,255,0.65); cursor: pointer; padding: 8px 14px; border: 1px solid rgba(255,255,255,0.22); letter-spacing: 0.08em; transition: all 0.25s var(--ease); }
+  .top-out:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  /* ═══ NAV ═══ */
+  .nav { display: flex; background: var(--panel); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 60; box-shadow: 0 2px 8px rgba(12,18,32,0.05); }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn { flex-shrink: 0; padding: 15px 16px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 12.5px; color: var(--gray); letter-spacing: 0.05em; border-bottom: 2.5px solid transparent; transition: all 0.28s var(--ease); white-space: nowrap; }
+  .nav-btn.active { color: var(--navy); font-weight: 600; border-bottom-color: var(--navy); }
+  .nav-dot { display: inline-block; width: 5px; height: 5px; background: var(--red); margin-left: 5px; vertical-align: 2px; }
+
+  .tab-panel { display: none; padding: 18px 18px 0; }
+  .tab-panel.active { display: block; animation: fadeUp 0.4s var(--ease) forwards; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ═══ ALERT CARD ═══ */
+  .alert-card {
+    background: var(--panel); border: 1px solid var(--amber-line); border-left: 4px solid var(--amber);
+    padding: 15px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 13px; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(12,18,32,0.04), 0 10px 24px rgba(12,18,32,0.05); transition: all 0.3s var(--ease);
+  }
+  .alert-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(12,18,32,0.05), 0 16px 32px rgba(12,18,32,0.09); }
+  .alert-count { background: var(--amber); color: #fff; min-width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+  .alert-t { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: 0.03em; }
+  .alert-s { font-size: 11px; color: var(--gray); margin-top: 3px; font-weight: 300; }
+  .alert-go { margin-left: auto; color: var(--amber); font-size: 17px; }
+
+  /* ═══ PANEL ═══ */
+  .panel { background: var(--panel); border: 1px solid var(--line); margin-bottom: 18px; box-shadow: 0 2px 4px rgba(12,18,32,0.03), 0 10px 26px rgba(12,18,32,0.045); }
+  .panel-head { padding: 17px 20px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; }
+  .panel-title { font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: 0.08em; }
+  .panel-note { font-size: 10.5px; color: var(--gray-2); letter-spacing: 0.04em; }
+  .panel-note b { color: var(--navy-2); font-weight: 600; }
+  .panel-body { padding: 20px; }
+
+  /* ═══ FORM GROUPS ═══ */
+  .fs { margin-bottom: 24px; }
+  .fs:last-child { margin-bottom: 0; }
+  .fs-head { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+  .fs-n { width: 18px; height: 18px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; flex-shrink: 0; }
+  .fs-t { font-size: 12px; font-weight: 600; color: var(--ink); letter-spacing: 0.08em; }
+  .fs-line { flex: 1; height: 1px; background: var(--line); }
+
+  .f-group { margin-bottom: 14px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row .f-group { flex: 1; min-width: 0; }
+  .f-label { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: var(--gray); letter-spacing: 0.06em; margin-bottom: 7px; }
+  .f-req { color: var(--red); font-size: 11px; }
+  .f-wrap { position: relative; display: flex; }
+  .f-state { width: 3px; flex-shrink: 0; background: var(--gray-3); transition: background 0.3s var(--ease); }
+  .f-box {
+    flex: 1; min-width: 0; padding: 13px 13px; background: var(--panel-2); border: 1px solid var(--line-2); border-left: none;
+    font-size: 15px; color: var(--ink); font-family: inherit; outline: none; letter-spacing: 0.02em;
+    transition: all 0.22s var(--ease); -webkit-appearance: none; appearance: none;
+  }
+  .f-box:focus { border-color: var(--navy); background: #fff; }
+  .f-wrap:focus-within .f-state { background: var(--navy); }
+  .f-box.filled { background: var(--tint); border-color: #B9D3F0; font-weight: 500; }
+  .f-box.filled + .f-state, .f-wrap.done .f-state { background: var(--navy-3); }
+  select.f-box { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23656F82' fill='none' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 32px; }
+
+  .quick-row { display: flex; gap: 6px; margin-top: 7px; }
+  .quick-btn { padding: 5px 11px; background: var(--panel); border: 1px solid var(--line-2); font-size: 10.5px; color: var(--gray); cursor: pointer; font-family: inherit; letter-spacing: 0.04em; transition: all 0.2s var(--ease); }
+  .quick-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--tint); }
+
+  /* ═══ STICKY SUBMIT ═══ */
+  .submit-dock {
+    position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 14px 18px 18px;
+    background: linear-gradient(180deg, rgba(237,239,243,0) 0%, var(--bg) 32%); z-index: 80;
+  }
+  .btn-submit {
+    width: 100%; padding: 18px; background: var(--navy); border: none; color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; letter-spacing: 0.16em; text-indent: 0.16em;
+    transition: all 0.3s var(--ease); box-shadow: 0 10px 28px rgba(20,51,94,0.32);
+  }
+  .btn-submit:hover { background: var(--ink); }
+  .btn-submit:active { transform: scale(0.99); }
+
+  /* ═══ STAT ═══ */
+  .stat-bar { display: flex; background: var(--panel); border: 1px solid var(--line); margin-bottom: 18px; box-shadow: 0 2px 4px rgba(12,18,32,0.03), 0 10px 26px rgba(12,18,32,0.045); }
+  .stat-u { flex: 1; padding: 17px 4px 15px; text-align: center; border-right: 1px solid var(--line); position: relative; }
+  .stat-u:last-child { border-right: none; }
+  .stat-u .v { font-family: 'Noto Serif TC', serif; font-size: 27px; font-weight: 500; color: var(--ink); line-height: 1; letter-spacing: -0.01em; }
+  .stat-u .k { font-size: 10px; color: var(--gray); margin-top: 9px; letter-spacing: 0.04em; }
+  .stat-u.key { background: var(--tint); }
+  .stat-u.key .v { color: var(--navy); }
+  .stat-u.go .v { color: var(--green); }
+  .stat-u.warn { background: var(--amber-bg); }
+  .stat-u.warn .v { color: var(--amber); }
+
+  /* ═══ RECORD CARDS ═══ */
+  .rec {
+    display: flex; background: var(--panel); border: 1px solid var(--line); margin-bottom: 10px; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(12,18,32,0.04); transition: all 0.25s var(--ease);
+  }
+  .rec:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(12,18,32,0.1); border-color: var(--line-2); }
+  .rec-state { width: 4px; flex-shrink: 0; }
+  .rec-state.shipped { background: var(--green); }
+  .rec-state.stock { background: var(--navy-3); }
+  .rec-body { flex: 1; padding: 14px 16px; min-width: 0; }
+  .rec-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9px; }
+  .rec-cust { font-size: 14.5px; font-weight: 600; color: var(--ink); letter-spacing: 0.03em; }
+  .rec-badge { font-size: 10px; font-weight: 500; padding: 3px 8px; letter-spacing: 0.04em; white-space: nowrap; }
+  .rec-badge.shipped { color: var(--green); background: var(--green-bg); }
+  .rec-badge.stock { color: var(--navy-2); background: var(--tint); }
+  .rec-item { font-size: 12.5px; color: var(--ink); margin-bottom: 8px; letter-spacing: 0.02em; }
+  .rec-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11px; color: var(--gray-2); }
+  .rec-meta span b { color: var(--gray); font-weight: 400; }
+  .rec-edit { display: flex; align-items: center; padding: 0 14px; color: var(--gray-3); font-size: 16px; border-left: 1px solid var(--line); }
+
+  /* ═══ FILTER ═══ */
+  .filters { display: flex; gap: 12px; margin-bottom: 16px; }
+  .filters .f-group { flex: 1; margin-bottom: 0; }
+
+  /* ═══ SPEC STACK BAR ═══ */
+  .spec { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .spec:last-child { border-bottom: none; padding-bottom: 0; }
+  .spec-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9px; }
+  .spec-n { font-size: 13px; color: var(--ink); font-weight: 500; letter-spacing: 0.02em; }
+  .spec-v { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gray-2); letter-spacing: 0.04em; }
+  .spec-v b { color: var(--ink); font-weight: 500; }
+  .stack { display: flex; height: 7px; background: var(--panel-2); border: 1px solid var(--line); }
+  .stack .s1 { background: var(--green); transition: width 0.9s var(--ease); }
+  .stack .s2 { background: var(--navy-3); transition: width 0.9s var(--ease); }
+  .stack-key { display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .stack-key span { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--gray); }
+  .stack-key i { width: 9px; height: 9px; display: inline-block; }
+
+  /* ═══ CHART ═══ */
+  .chart { display: flex; align-items: flex-end; gap: 7px; height: 128px; padding-bottom: 9px; border-bottom: 1px solid var(--line-2); }
+  .chart-col { flex: 1; display: flex; flex-direction: column-reverse; height: 100%; background: var(--panel-2); position: relative; }
+  .chart-bar { width: 100%; background: var(--navy-3); opacity: 0.34; transition: all 0.9s var(--ease); }
+  .chart-bar.now { opacity: 1; background: var(--navy); }
+  .chart-v { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--gray-2); }
+  .chart-x { display: flex; gap: 7px; margin-top: 8px; }
+  .chart-x span { flex: 1; text-align: center; font-size: 10px; color: var(--gray-2); }
+
+  /* ═══ PENDING ═══ */
+  .pend { background: var(--panel); border: 1px solid var(--amber-line); border-left: 4px solid var(--amber); padding: 16px; margin-bottom: 11px; box-shadow: 0 2px 6px rgba(12,18,32,0.05); }
+  .pend-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .pend-no { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: 0.06em; }
+  .pend-d { font-size: 11px; color: var(--gray-2); }
+  .pend-s { font-size: 11.5px; color: var(--gray); margin-bottom: 13px; font-weight: 300; }
+  .pend-act { width: 100%; padding: 11px; background: var(--amber); border: none; color: #fff; font-size: 12.5px; font-weight: 500; cursor: pointer; font-family: inherit; letter-spacing: 0.1em; transition: all 0.25s var(--ease); }
+  .pend-act:hover { background: #7E5306; }
+
+  /* ═══ LOG ═══ */
+  .log { display: flex; gap: 13px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+  .log:last-child { border-bottom: none; padding-bottom: 0; }
+  .log-dot { width: 7px; height: 7px; margin-top: 6px; flex-shrink: 0; }
+  .log-dot.create { background: var(--green); }
+  .log-dot.edit { background: var(--navy-3); }
+  .log-main { flex: 1; min-width: 0; }
+  .log-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; gap: 10px; }
+  .log-act { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: 0.03em; }
+  .log-time { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--gray-2); white-space: nowrap; }
+  .log-d { font-size: 11.5px; color: var(--gray); line-height: 1.75; font-weight: 300; }
+  .log-d .o { color: var(--red); text-decoration: line-through; }
+  .log-d .n { color: var(--green); font-weight: 500; }
+  .log-src { font-size: 10px; color: var(--gray-2); margin-top: 6px; font-weight: 300; }
+
+  /* ═══ EMPTY ═══ */
+  .empty { padding: 44px 20px; text-align: center; }
+  .empty-i { width: 40px; height: 40px; border: 1.5px solid var(--gray-3); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: var(--gray-3); font-size: 18px; }
+  .empty-t { font-size: 13px; color: var(--gray); font-weight: 500; margin-bottom: 6px; }
+  .empty-s { font-size: 11.5px; color: var(--gray-2); font-weight: 300; line-height: 1.7; }
+
+  /* ═══ MODAL ═══ */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(12,18,32,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center; padding: 18px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--panel); width: 100%; max-width: 420px; border: 1px solid var(--line-2); box-shadow: 0 34px 84px rgba(12,18,32,0.4); animation: mIn 0.32s var(--ease); max-height: 88vh; display: flex; flex-direction: column; }
+  @keyframes mIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-head { padding: 16px 20px; background: var(--navy); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .modal-t { font-size: 14px; font-weight: 600; color: #fff; letter-spacing: 0.08em; }
+  .modal-ref { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 0.14em; }
+  .modal-body { padding: 20px; overflow-y: auto; }
+  .modal-acts { display: flex; border-top: 1px solid var(--line); flex-shrink: 0; }
+  .modal-acts button { flex: 1; padding: 16px 6px; background: var(--panel); border: none; cursor: pointer; font-family: inherit; font-size: 12.5px; font-weight: 500; letter-spacing: 0.08em; border-right: 1px solid var(--line); transition: all 0.22s var(--ease); color: var(--gray); }
+  .modal-acts button:last-child { border-right: none; }
+  .modal-acts button:hover { background: var(--panel-2); color: var(--ink); }
+  .modal-acts .a-del { color: var(--red); }
+  .modal-acts .a-del:hover { background: #FBEEED; }
+  .modal-acts .a-save { background: var(--navy); color: #fff; flex: 1.4; }
+  .modal-acts .a-save:hover { background: var(--ink); color: #fff; }
+
+  /* ═══ TOAST ═══ */
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(120px); background: var(--ink); color: #fff; padding: 14px 24px; font-size: 12.5px; z-index: 999; transition: transform 0.42s var(--ease); white-space: nowrap; letter-spacing: 0.04em; box-shadow: 0 16px 40px rgba(12,18,32,0.35); font-weight: 300; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
-<div class="container">
-  <h2>快速回填測試 / Quick Feedback Test</h2>
 
-  <label>姓名 / NAME</label>
-  <input id="name" placeholder="輸入姓名 / Type your name">
-
-  <label>IG</label>
-  <input id="ig" placeholder="輸入 IG 帳號 / Type your IG">
-
-  <label>桌長 / Leader</label>
-  <input id="leader" placeholder="輸入桌長姓名 / Type leader name">
-
-  <label>狀態 / Status</label>
-  <select id="status">
-    <option value="確認訂位，我會參加 | Confirm reservation - I will attend">確認訂位，我會參加 / Confirm reservation - I will attend</option>
-    <option value="抱歉，無法參加 | Sorry - cannot attend">抱歉，無法參加 / Sorry - cannot attend</option>
-  </select>
-
-  <label>備註 / Notes</label>
-  <textarea id="notes" rows="3" placeholder="可輸入其他訊息 / Optional notes"></textarea>
-
-  <button id="submitBtn">送出 / Submit</button>
-
-  <div id="result"></div>
+<!-- ══ LOGIN ══ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-panel">
+    <div class="login-mark serif">備</div>
+    <div class="login-title">業務備貨管理系統</div>
+    <div class="login-sub">SALES STOCK MANAGEMENT</div>
+    <div class="login-divider"></div>
+    <div class="in-group"><label class="in-label">帳號</label><input class="in-box" type="text" value="王大明"></div>
+    <div class="in-group"><label class="in-label">密碼</label><input class="in-box" type="password" value="••••••••"></div>
+    <div class="remember-row">
+      <input type="checkbox" id="rememberMe" checked>
+      <label for="rememberMe">記住我，下次自動登入（此裝置常駐登入，不會自動清除）</label>
+    </div>
+    <button class="btn-enter" onclick="doLogin()">登入系統</button>
+    <div class="login-foot">此系統僅供內部業務同仁使用<br>忘記密碼請聯繫行政人員</div>
+  </div>
 </div>
 
-<div id="toast">✔ 已成功送出 / Submitted</div>
+<!-- ══ MAIN ══ -->
+<div class="app" id="mainApp" style="display:none">
+
+  <div class="top-bar">
+    <div class="top-row">
+      <div class="top-id">
+        <div class="top-avatar serif">王</div>
+        <div>
+          <div class="top-name">王大明</div>
+          <div class="top-date">2026.08.07 THU</div>
+        </div>
+      </div>
+      <div class="top-out" onclick="logout()">登出</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('register', this)">備貨登記</button>
+    <button class="nav-btn" onclick="switchTab('records', this)">我的紀錄</button>
+    <button class="nav-btn" onclick="switchTab('stats', this)">庫存統計</button>
+    <button class="nav-btn" onclick="switchTab('pending', this)">待補齊<span class="nav-dot"></span></button>
+    <button class="nav-btn" onclick="switchTab('logs', this)">操作紀錄</button>
+  </nav>
+
+  <!-- 備貨登記 -->
+  <section class="tab-panel active" id="tab-register">
+    <div class="alert-card" onclick="switchTab('pending', document.querySelectorAll('.nav-btn')[3])">
+      <div class="alert-count">2</div>
+      <div>
+        <div class="alert-t">筆發票待補齊備貨資料</div>
+        <div class="alert-s">行政已登記發票，請補上客戶與品項明細</div>
+      </div>
+      <div class="alert-go">›</div>
+    </div>
+
+    <form id="regForm" onsubmit="submitRecord(event)">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">新增備貨紀錄</span>
+          <span class="panel-note">已填 <b id="fillCount">2</b> / 9</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="fs">
+            <div class="fs-head"><span class="fs-n">1</span><span class="fs-t">客戶與品項</span><span class="fs-line"></span></div>
+            <div class="f-group">
+              <label class="f-label">客戶名稱<span class="f-req">*</span></label>
+              <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" list="customerList" oninput="mark(this)"></div>
+              <datalist id="customerList"><option value="健仁"><option value="中正"><option value="王大明診所"><option value="王小華診所"><option value="王氏醫療"></datalist>
+            </div>
+            <div class="f-group">
+              <label class="f-label">品項<span class="f-req">*</span></label>
+              <div class="f-wrap done"><span class="f-state"></span><select class="f-box filled" onchange="mark(this)">
+                <option>速原2.5ml-2級</option><option>速原5ml-2級</option><option>速原10ml-2級</option>
+                <option>樂業5ml</option><option>樂業10ml</option><option>薇基因(盒裝)</option>
+                <option>妙癒修復霜-20ml(盒裝)</option><option>妙癒修復霜-5ml(軟管)</option><option>歐儷芙舒口噴劑</option>
+              </select></div>
+            </div>
+            <div class="f-row">
+              <div class="f-group">
+                <label class="f-label">科別</label>
+                <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" list="categoryList" oninput="mark(this)"></div>
+                <datalist id="categoryList"><option value="Gs"><option value="刀房"><option value="骨科"><option value="採購"><option value="護理站"><option value="麻醉科"></datalist>
+              </div>
+              <div class="f-group">
+                <label class="f-label">賣 / 備 / 樣</label>
+                <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" list="typeList" oninput="mark(this)"></div>
+                <datalist id="typeList"><option value="賣"><option value="備"><option value="樣"><option value="借"></datalist>
+              </div>
+            </div>
+          </div>
+
+          <div class="fs">
+            <div class="fs-head"><span class="fs-n">2</span><span class="fs-t">批號與日期</span><span class="fs-line"></span></div>
+            <div class="f-group">
+              <label class="f-label">批號</label>
+              <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" oninput="mark(this)"></div>
+            </div>
+            <div class="f-row">
+              <div class="f-group">
+                <label class="f-label">備貨日期<span class="f-req">*</span></label>
+                <div class="f-wrap done"><span class="f-state"></span><input class="f-box filled" type="date" value="2026-08-07" id="dateStock" oninput="mark(this)"></div>
+              </div>
+              <div class="f-group">
+                <label class="f-label">送貨日期</label>
+                <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="date" id="dateShip" oninput="mark(this)"></div>
+                <div class="quick-row">
+                  <button type="button" class="quick-btn" onclick="setDate('dateShip', 0)">今天</button>
+                  <button type="button" class="quick-btn" onclick="setDate('dateShip', 1)">明天</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fs">
+            <div class="fs-head"><span class="fs-n">3</span><span class="fs-t">其他資訊</span><span class="fs-line"></span></div>
+            <div class="f-group">
+              <label class="f-label">訂購單號</label>
+              <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" oninput="mark(this)"></div>
+            </div>
+            <div class="f-group" style="margin-bottom:0">
+              <label class="f-label">備註</label>
+              <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" oninput="mark(this)"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </form>
+    <div class="submit-dock"><button class="btn-submit" onclick="document.getElementById('regForm').requestSubmit()">送出備貨紀錄</button></div>
+  </section>
+
+  <!-- 我的紀錄 -->
+  <section class="tab-panel" id="tab-records">
+    <div class="stat-bar">
+      <div class="stat-u"><div class="v">86</div><div class="k">本月總數</div></div>
+      <div class="stat-u go"><div class="v">61</div><div class="k">已出貨</div></div>
+      <div class="stat-u key"><div class="v">25</div><div class="k">庫存中</div></div>
+      <div class="stat-u warn"><div class="v">2</div><div class="k">待補齊</div></div>
+    </div>
+
+    <div class="filters">
+      <div class="f-group"><label class="f-label">月份</label><div class="f-wrap done"><span class="f-state"></span><select class="f-box filled"><option>2026年8月</option><option>2026年7月</option></select></div></div>
+      <div class="f-group"><label class="f-label">品項</label><div class="f-wrap done"><span class="f-state"></span><select class="f-box filled"><option>全部品項</option><option>速原2.5ml-2級</option><option>樂業5ml</option></select></div></div>
+    </div>
+
+    <div id="recordList"></div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">品項分佈</span><span class="panel-note">本月</span></div>
+      <div class="panel-body" id="itemBreakdownRecords"></div>
+    </div>
+  </section>
+
+  <!-- 庫存統計 -->
+  <section class="tab-panel" id="tab-stats">
+    <div class="stat-bar">
+      <div class="stat-u"><div class="v">86</div><div class="k">當月備貨</div></div>
+      <div class="stat-u go"><div class="v">61</div><div class="k">已出貨</div></div>
+      <div class="stat-u key"><div class="v">25</div><div class="k">庫存中</div></div>
+      <div class="stat-u warn"><div class="v">2</div><div class="k">待補齊</div></div>
+    </div>
+
+    <div class="filters">
+      <div class="f-group"><label class="f-label">統計期間</label><div class="f-wrap done"><span class="f-state"></span><select class="f-box filled"><option>2026年8月</option><option>2026年7月</option></select></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">近六個月備貨量</span></div>
+      <div class="panel-body">
+        <div class="chart">
+          <div class="chart-col"><div class="chart-bar" style="height:45%"><span class="chart-v">39</span></div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:60%"><span class="chart-v">52</span></div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:38%"><span class="chart-v">33</span></div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:72%"><span class="chart-v">62</span></div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:55%"><span class="chart-v">47</span></div></div>
+          <div class="chart-col"><div class="chart-bar now" style="height:86%"><span class="chart-v">86</span></div></div>
+        </div>
+        <div class="chart-x"><span>3月</span><span>4月</span><span>5月</span><span>6月</span><span>7月</span><span>8月</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">品項庫存明細</span></div>
+      <div class="panel-body" id="itemBreakdownStats"></div>
+    </div>
+  </section>
+
+  <!-- 待補齊 -->
+  <section class="tab-panel" id="tab-pending">
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-body" style="padding:16px 18px">
+        <div style="font-size:12.5px;color:var(--gray);line-height:1.8;font-weight:300">
+          行政人員已登記發票，但尚未有對應的備貨紀錄。<br>請點選補齊客戶名稱、品項等完整資料。
+        </div>
+      </div>
+    </div>
+    <div id="pendingList"></div>
+  </section>
+
+  <!-- 操作紀錄 -->
+  <section class="tab-panel" id="tab-logs">
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">我的操作紀錄</span><span class="panel-note">完整稽核軌跡</span></div>
+      <div class="panel-body" id="logList"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-t">編輯備貨紀錄</span><span class="modal-ref" id="modalRef">REC / 001</span></div>
+    <div class="modal-body">
+      <div class="f-group">
+        <label class="f-label">客戶名稱</label>
+        <div class="f-wrap done"><span class="f-state"></span><input class="f-box filled" type="text" id="edit-customer" list="customerList" oninput="mark(this)"></div>
+      </div>
+      <div class="f-group">
+        <label class="f-label">品項</label>
+        <div class="f-wrap done"><span class="f-state"></span><select class="f-box filled" id="edit-item" onchange="mark(this)"><option>速原2.5ml-2級</option><option>樂業5ml</option><option>薇基因(盒裝)</option></select></div>
+      </div>
+      <div class="f-row">
+        <div class="f-group">
+          <label class="f-label">科別</label>
+          <div class="f-wrap done"><span class="f-state"></span><input class="f-box filled" type="text" id="edit-category" list="categoryList" oninput="mark(this)"></div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">賣 / 備 / 樣</label>
+          <div class="f-wrap done"><span class="f-state"></span><input class="f-box filled" type="text" id="edit-type" list="typeList" oninput="mark(this)"></div>
+        </div>
+      </div>
+      <div class="f-group" style="margin-bottom:0">
+        <label class="f-label">訂購單號</label>
+        <div class="f-wrap"><span class="f-state"></span><input class="f-box" type="text" id="edit-order" oninput="mark(this)"></div>
+      </div>
+    </div>
+    <div class="modal-acts">
+      <button onclick="closeModal()">取消</button>
+      <button class="a-del" onclick="showToast('已刪除此筆紀錄 · 操作已記錄')">刪除</button>
+      <button class="a-save" onclick="saveEdit()">儲存修改</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYaLN-YIX8-leyki5JdfvArDWFvyreBmGFBM5E3_EajWatzFBKA4blBLyBaQ0rHT2b/exec";
+let records = [
+  { id: 1, date: '08-05', customer: '健仁醫院', item: '速原2.5ml-2級', category: 'Gs', type: '賣', order: '964484', status: 'shipped' },
+  { id: 2, date: '08-03', customer: '中正診所', item: '樂業5ml', category: '骨科', type: '賣', order: '179584', status: 'stock' },
+  { id: 3, date: '08-02', customer: '健仁醫院', item: '薇基因(盒裝)', category: '採購', type: '備', order: '—', status: 'stock' },
+];
+let logs = [
+  { time: '08-05 14:22', action: '新增紀錄', field: '', desc: '新增客戶「健仁醫院」備貨紀錄', source: '業務端網頁 · 王大明', type: 'create' },
+  { time: '08-03 09:10', action: '新增紀錄', field: '', desc: '新增客戶「中正診所」備貨紀錄', source: '業務端網頁 · 王大明', type: 'create' },
+];
+let itemStats = [
+  { name: '速原2.5ml-2級', stock: 12, shipped: 28 },
+  { name: '樂業5ml', stock: 7, shipped: 15 },
+  { name: '薇基因(盒裝)', stock: 4, shipped: 9 },
+  { name: '妙癒修復霜-20ml', stock: 2, shipped: 9 },
+];
+let pendings = [
+  { no: 'XH43243056', date: '2026-08-06' },
+  { no: 'XH43243158', date: '2026-08-06' },
+];
 
-function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg || '✔ 已成功送出 / Submitted';
-  t.classList.add('show');
-  setTimeout(()=> t.classList.remove('show'), 2000);
+function doLogin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  renderRecords(); renderLogs(); renderItemBreakdown(); renderPendings(); updateFillCount();
+}
+function logout() { document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; }
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  document.querySelector('.submit-dock').style.display = (name === 'register') ? 'block' : 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function mark(el) {
+  const w = el.closest('.f-wrap');
+  if (el.value && el.value.trim() !== '') { el.classList.add('filled'); if (w) w.classList.add('done'); }
+  else { el.classList.remove('filled'); if (w) w.classList.remove('done'); }
+  updateFillCount();
+}
+function updateFillCount() {
+  const form = document.getElementById('regForm');
+  if (!form) return;
+  const n = form.querySelectorAll('.f-wrap.done').length;
+  const el = document.getElementById('fillCount');
+  if (el) el.textContent = n;
+}
+function setDate(id, offset) {
+  const d = new Date('2026-08-07');
+  d.setDate(d.getDate() + offset);
+  const el = document.getElementById(id);
+  el.value = d.toISOString().slice(0, 10);
+  mark(el);
+}
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+function renderRecords() {
+  const list = document.getElementById('recordList');
+  if (records.length === 0) {
+    list.innerHTML = `<div class="panel"><div class="empty"><div class="empty-i">＋</div><div class="empty-t">本月尚無備貨紀錄</div><div class="empty-s">前往「備貨登記」新增第一筆紀錄</div></div></div>`;
+    return;
+  }
+  list.innerHTML = records.map(r => `
+    <div class="rec" onclick="openEditModal(${r.id})">
+      <div class="rec-state ${r.status}"></div>
+      <div class="rec-body">
+        <div class="rec-top">
+          <span class="rec-cust">${r.customer}</span>
+          <span class="rec-badge ${r.status}">${r.status === 'shipped' ? '已出貨' : '庫存中'}</span>
+        </div>
+        <div class="rec-item">${r.item}</div>
+        <div class="rec-meta">
+          <span><b>${r.date}</b></span><span>科別 <b>${r.category}</b></span><span>${r.type}</span><span>單號 <b>${r.order}</b></span>
+        </div>
+      </div>
+      <div class="rec-edit">›</div>
+    </div>`).join('');
+}
+function renderItemBreakdown() {
+  document.getElementById('itemBreakdownRecords').innerHTML = itemStats.map(i => {
+    const total = i.stock + i.shipped;
+    const p1 = Math.round((i.shipped / total) * 100);
+    return `<div class="spec">
+      <div class="spec-top"><span class="spec-n">${i.name}</span><span class="spec-v">共 <b>${total}</b> 筆</span></div>
+      <div class="stack"><div class="s1" style="width:${p1}%"></div><div class="s2" style="width:${100-p1}%"></div></div>
+    </div>`;
+  }).join('') + `<div class="stack-key"><span><i style="background:var(--green)"></i>已出貨</span><span><i style="background:var(--navy-3)"></i>庫存中</span></div>`;
+
+  document.getElementById('itemBreakdownStats').innerHTML = itemStats.map(i => {
+    const total = i.stock + i.shipped;
+    const p1 = Math.round((i.shipped / total) * 100);
+    return `<div class="spec">
+      <div class="spec-top"><span class="spec-n">${i.name}</span><span class="spec-v">出貨 <b>${i.shipped}</b> ／ 庫存 <b>${i.stock}</b></span></div>
+      <div class="stack"><div class="s1" style="width:${p1}%"></div><div class="s2" style="width:${100-p1}%"></div></div>
+    </div>`;
+  }).join('') + `<div class="stack-key"><span><i style="background:var(--green)"></i>已出貨</span><span><i style="background:var(--navy-3)"></i>庫存中</span></div>`;
+}
+function renderPendings() {
+  const list = document.getElementById('pendingList');
+  if (pendings.length === 0) {
+    list.innerHTML = `<div class="panel"><div class="empty"><div class="empty-i">✓</div><div class="empty-t">目前沒有待補齊項目</div><div class="empty-s">所有發票都已對應到備貨紀錄</div></div></div>`;
+    return;
+  }
+  list.innerHTML = pendings.map(p => `
+    <div class="pend">
+      <div class="pend-top"><span class="pend-no">${p.no}</span><span class="pend-d">${p.date}</span></div>
+      <div class="pend-s">發票已開立，尚未建立備貨紀錄</div>
+      <button class="pend-act" onclick="showToast('開啟補齊表單 · ${p.no}')">補齊資料</button>
+    </div>`).join('');
+}
+function renderLogs() {
+  document.getElementById('logList').innerHTML = logs.slice().reverse().map(l => `
+    <div class="log">
+      <div class="log-dot ${l.type}"></div>
+      <div class="log-main">
+        <div class="log-top"><span class="log-act">${l.action}</span><span class="log-time">${l.time}</span></div>
+        <div class="log-d">${l.field ? `${l.field}：<span class="o">${l.before}</span> → <span class="n">${l.after}</span>` : l.desc}</div>
+        <div class="log-src">${l.source}</div>
+      </div>
+    </div>`).join('');
 }
 
-document.getElementById('submitBtn').addEventListener('click', async ()=>{
-  const payload = {
-    name: document.getElementById('name').value.trim(),
-    ig: document.getElementById('ig').value.trim(),
-    leader: document.getElementById('leader').value.trim(),
-    status: document.getElementById('status').value,
-    notes: document.getElementById('notes').value.trim()
-  };
-  const resultDiv = document.getElementById('result');
-  resultDiv.textContent = '⏳ 送出中 / Sending...\n' + JSON.stringify(payload, null, 2);
-  console.log("Sending payload:", payload);
-
-  try {
-    const res = await fetch(WEB_APP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
-    const text = await res.text();
-    console.log("Response text:", text);
-    try {
-      const json = JSON.parse(text);
-      resultDiv.textContent = "✅ 已送出成功 / Submitted\n\n伺服器回傳：\n" + JSON.stringify(json, null, 2);
-      showToast("✔ 已成功送出 / Submitted");
-    } catch(e) {
-      resultDiv.textContent = "⚠️ 回傳非 JSON 格式，內容如下：\n" + text;
-    }
-  } catch(err) {
-    resultDiv.textContent = "❌ 錯誤：無法連線到 Google Apps Script。\n" + err;
-  }
-});
+let currentEditId = null;
+function openEditModal(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  currentEditId = id;
+  document.getElementById('modalRef').textContent = 'REC / ' + String(r.id).padStart(3, '0');
+  document.getElementById('edit-customer').value = r.customer;
+  document.getElementById('edit-item').value = r.item;
+  document.getElementById('edit-category').value = r.category;
+  document.getElementById('edit-type').value = r.type;
+  const o = document.getElementById('edit-order');
+  o.value = r.order === '—' ? '' : r.order;
+  ['edit-customer','edit-item','edit-category','edit-type','edit-order'].forEach(x => mark(document.getElementById(x)));
+  document.getElementById('editModal').classList.add('show');
+}
+function closeModal() { document.getElementById('editModal').classList.remove('show'); }
+function saveEdit() {
+  const r = records.find(x => x.id === currentEditId);
+  if (!r) return;
+  const nc = document.getElementById('edit-category').value;
+  if (nc !== r.category) logs.push({ time: '08-07 ' + new Date().toTimeString().slice(0,5), action: '修改紀錄', field: '科別', before: r.category, after: nc, source: '業務端網頁 · 王大明', type: 'edit' });
+  r.customer = document.getElementById('edit-customer').value;
+  r.item = document.getElementById('edit-item').value;
+  r.category = nc;
+  r.type = document.getElementById('edit-type').value;
+  r.order = document.getElementById('edit-order').value || '—';
+  renderRecords(); renderLogs(); closeModal();
+  showToast('已儲存修改 · 操作已記錄至 LOG');
+}
+function submitRecord(e) {
+  e.preventDefault();
+  logs.push({ time: '08-07 ' + new Date().toTimeString().slice(0,5), action: '新增紀錄', field: '', desc: '新增一筆備貨紀錄', source: '業務端網頁 · 王大明', type: 'create' });
+  showToast('備貨紀錄已送出');
+  switchTab('records', document.querySelectorAll('.nav-btn')[1]);
+  renderRecords(); renderLogs();
+}
 </script>
 </body>
 </html>
